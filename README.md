@@ -8,11 +8,17 @@
 
 이 프로젝트는 다릅니다. **"Claude가 전략 문서를 읽고, 스스로 데이터를 수집하고, 분석하고, 매매를 실행하는"** 에이전틱 구조입니다.
 
+![시스템 개요](assets/01_system_overview.png)
+
 - 매매 로직을 코드로 하드코딩하지 않습니다
 - `strategy.md`에 자연어로 전략을 작성하면 Claude가 해석하여 판단합니다
 - Python 스크립트는 데이터 수집과 API 호출만 담당합니다
 
 ## 아키텍처
+
+![데이터 파이프라인](assets/02_data_pipeline.png)
+
+![매매 판단 프로세스](assets/03_trading_decision.png)
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -132,6 +138,8 @@ claude-coin-trading/
 
 ## 안전장치
 
+![안전장치 시스템](assets/04_safety_guards.png)
+
 **실제 자산을 거래할 수 있는 시스템입니다.** 반드시 아래 안전장치를 확인하세요.
 
 | 파라미터 | 기본값 | 설명 |
@@ -159,6 +167,8 @@ claude
 ```
 
 ### 2. 자동 실행 모드 (cron)
+
+![자동화 아키텍처](assets/05_automation_architecture.png)
 
 ```bash
 # cron 등록 (대화형 간격 선택)
