@@ -6,7 +6,7 @@
 # 결과를 로그에 저장하고, 에러 시 텔레그램으로 알린다.
 #
 # crontab 등록:
-#   0 0,8,16 * * * /path/to/claude-coin-trading/scripts/cron_run.sh
+#   0 0,8,16 * * * /path/to/claude-coin-trading-bithumb/scripts/cron_run.sh
 # ──────────────────────────────────────────────────────────
 
 set -euo pipefail

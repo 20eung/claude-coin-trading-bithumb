@@ -3,7 +3,7 @@
 # Claude 암호화폐 자동매매 시스템 - 원클릭 설치 스크립트
 #
 # 사용법:
-#   bash <(curl -sL https://raw.githubusercontent.com/20eung/claude-coin-trading/main/setup.sh)
+#   bash <(curl -sL https://raw.githubusercontent.com/20eung/claude-coin-trading-bithumb/main/setup.sh)
 # ──────────────────────────────────────────────────────────
 
 set -euo pipefail
@@ -48,7 +48,7 @@ fi
 ok "git, python3 ($PYTHON_VER), claude 확인 완료"
 
 # ── 프로젝트 폴더 설정 ──────────────────────────────────
-DEFAULT_DIR="claude-coin-trading"
+DEFAULT_DIR="claude-coin-trading-bithumb"
 echo ""
 echo -ne "${BOLD}프로젝트 폴더명 (기본: ${DEFAULT_DIR}): ${NC}"
 read -r PROJECT_DIR
@@ -65,7 +65,7 @@ if [ -d "$PROJECT_DIR" ]; then
 fi
 
 # ── 저장소 클론 ─────────────────────────────────────────
-REPO_URL="https://github.com/20eung/claude-coin-trading.git"
+REPO_URL="https://github.com/20eung/claude-coin-trading-bithumb.git"
 
 info "저장소를 복제합니다..."
 git clone --depth 1 "$REPO_URL" "$PROJECT_DIR" 2>/dev/null \

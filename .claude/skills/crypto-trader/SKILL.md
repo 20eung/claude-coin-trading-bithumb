@@ -61,7 +61,7 @@ playwright install chromium
 ## 프로젝트 구조
 
 ```
-claude-coin-trading/
+claude-coin-trading-bithumb/
 ├── CLAUDE.md                      # 프로젝트 지침 + 교육 커리큘럼
 ├── .env                           # API 키 (git 추적 제외)
 ├── .env.example                   # API 키 템플릿

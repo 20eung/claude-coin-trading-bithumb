@@ -56,14 +56,14 @@
 ### 원클릭 설치
 
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/20eung/claude-coin-trading/main/setup.sh)
+bash <(curl -sL https://raw.githubusercontent.com/20eung/claude-coin-trading-bithumb/main/setup.sh)
 ```
 
 ### 수동 설치
 
 ```bash
-git clone https://github.com/20eung/claude-coin-trading.git
-cd claude-coin-trading
+git clone https://github.com/20eung/claude-coin-trading-bithumb.git
+cd claude-coin-trading-bithumb
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env  # API 키 설정
@@ -84,7 +84,7 @@ cp .env.example .env  # API 키 설정
 
 ```bash
 # Claude Code 대화형 세션
-cd claude-coin-trading && claude
+cd claude-coin-trading-bithumb && claude
 
 # 첫 프롬프트
 "비트코인 시장을 분석해줘"
@@ -115,7 +115,7 @@ cd claude-coin-trading && claude
 ## 프로젝트 구조
 
 ```
-claude-coin-trading/
+claude-coin-trading-bithumb/
 ├── CLAUDE.md                      # 프로젝트 지침 (Claude가 읽는 파일)
 ├── CHANGELOG.md                   # 버전별 변경 이력
 ├── strategy.md                    # 매매 전략 (자연어, Claude가 해석)

@@ -12,7 +12,7 @@ set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 CRON_SCRIPT="${PROJECT_DIR}/scripts/cron_run.sh"
-CRON_TAG="# claude-coin-trading"
+CRON_TAG="# claude-coin-trading-bithumb"
 
 # 색상
 GREEN='\033[0;32m'
@@ -22,10 +22,10 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 show_status() {
-  if crontab -l 2>/dev/null | grep -q "claude-coin-trading"; then
+  if crontab -l 2>/dev/null | grep -q "claude-coin-trading-bithumb"; then
     echo -e "${GREEN}[활성]${NC} cron 자동매매가 등록되어 있습니다."
     echo ""
-    crontab -l 2>/dev/null | grep "claude-coin-trading"
+    crontab -l 2>/dev/null | grep "claude-coin-trading-bithumb"
   else
     echo -e "${YELLOW}[미등록]${NC} cron 자동매매가 등록되어 있지 않습니다."
   fi
@@ -33,7 +33,7 @@ show_status() {
 
 install_cron() {
   # 이미 등록되어 있는지 확인
-  if crontab -l 2>/dev/null | grep -q "claude-coin-trading"; then
+  if crontab -l 2>/dev/null | grep -q "claude-coin-trading-bithumb"; then
     echo -e "${YELLOW}이미 등록되어 있습니다. 먼저 remove 후 다시 install 하세요.${NC}"
     show_status
     return 1
@@ -72,12 +72,12 @@ install_cron() {
 }
 
 remove_cron() {
-  if ! crontab -l 2>/dev/null | grep -q "claude-coin-trading"; then
+  if ! crontab -l 2>/dev/null | grep -q "claude-coin-trading-bithumb"; then
     echo -e "${YELLOW}등록된 cron이 없습니다.${NC}"
     return 0
   fi
 
-  crontab -l 2>/dev/null | grep -v "claude-coin-trading" | crontab -
+  crontab -l 2>/dev/null | grep -v "claude-coin-trading-bithumb" | crontab -
   echo -e "${GREEN}cron 자동매매가 해제되었습니다.${NC}"
 }
 
