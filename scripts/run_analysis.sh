@@ -138,8 +138,46 @@ $(date '+%Y-%m-%d %H:%M:%S KST')
    a) 결정이 매수 또는 매도인 경우:
       python3 scripts/execute_trade.py [bid|ask] KRW-BTC [금액|수량]
 
-   b) 텔레그램 알림 전송:
-      python3 scripts/notify_telegram.py trade "[결정 요약]" "[상세 근거]"
+   b) 텔레그램 알림 전송 (반드시 report 타입으로 JSON 전달):
+      echo '{ JSON }' | python3 scripts/notify_telegram.py report -
+
+      JSON 형식:
+      {
+        "decision": "매수|매도|관망",
+        "decision_en": "BUY|SELL|HOLD",
+        "market": {
+          "price": "현재가 98,600,000 KRW",
+          "sma20": "SMA(20) 98,411,100 (+0.19%)",
+          "rsi": "RSI 41.49",
+          "fgi": "FGI 14 (극도공포)"
+        },
+        "reasons": [
+          "첫 번째 근거",
+          "두 번째 근거",
+          "세 번째 근거"
+        ],
+        "portfolio": {
+          "holdings": "BTC 0.18833 @ 158.4M",
+          "profit_loss": "평가손 -37.75%"
+        }
+      }
+
+      출력 예시:
+      💰 ⏸️ 관망 (HOLD) - 2026-03-04 00:04 KST
+      (빈줄)
+      【시장 분석】
+      현재가 98,600,000 KRW
+      SMA(20) 98,411,100 (+0.19%)
+      RSI 41.49
+      FGI 14 (극도공포)
+      (빈줄)
+      【결정 근거】
+      - 첫 번째 근거
+      - 두 번째 근거
+      (빈줄)
+      【포트폴리오】
+      BTC 0.18833 @ 158.4M
+      평가손 -37.75%
 
 5. 최종 결과를 JSON 형식으로 출력하세요.
 PROMPT_EOF
