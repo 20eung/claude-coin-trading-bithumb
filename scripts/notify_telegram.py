@@ -76,7 +76,7 @@ def send_message(msg_type: str, title: str, body: str):
 
 
 def send_report(data):
-    """분석 리포트를 구조화된 포맷으로 전송 (일반 텍스트)"""
+    """분석 리포트를 구조화된 포맷으로 전송 (HTML)"""
     bot_token, user_id = _get_credentials()
 
     if isinstance(data, str):
@@ -86,35 +86,50 @@ def send_report(data):
     decision = data.get("decision", "관망")
     decision_en = data.get("decision_en", "HOLD")
     d_emoji = DECISION_EMOJI.get(decision, "\u23f8\ufe0f")
+    e = html.escape
 
-    lines = [f"\U0001f4b0 {d_emoji} {decision} ({decision_en}) - {ts}"]
+    lines = [
+        f"\U0001f4b0 {d_emoji} <b>{e(decision)} ({e(decision_en)})</b>",
+        ts,
+    ]
 
     # 【시장 분석】
     market = data.get("market", {})
     if market:
         lines.append("")
-        lines.append("\u3010시장 분석\u3011")
+        lines.append("<b>\u3010시장 분석\u3011</b>")
         for key, value in market.items():
-            lines.append(str(value))
+            val = str(value)
+            if key == "price":
+                parts = val.split(" ", 1)
+                if len(parts) == 2:
+                    lines.append(f"<b>{e(parts[0])}: {e(parts[1])}</b>")
+                else:
+                    lines.append(f"<b>{e(val)}</b>")
+            else:
+                lines.append(e(val))
 
     # 【결정 근거】
     reasons = data.get("reasons", [])
     if reasons:
         lines.append("")
-        lines.append("\u3010결정 근거\u3011")
+        lines.append("<b>\u3010결정 근거\u3011</b>")
         for reason in reasons:
-            lines.append(f"- {reason}")
+            lines.append(f"- {e(str(reason))}")
 
     # 【포트폴리오】
     portfolio = data.get("portfolio", {})
     if portfolio:
         lines.append("")
-        lines.append("\u3010포트폴리오\u3011")
+        lines.append("<b>\u3010포트폴리오\u3011</b>")
         for key, value in portfolio.items():
-            lines.append(str(value))
+            val = str(value)
+            if key == "profit_loss":
+                val = val.replace("평가손", "평가손익:")
+            lines.append(e(val))
 
     text = "\n".join(lines)
-    _send(bot_token, user_id, text)
+    _send(bot_token, user_id, text, parse_mode="HTML")
     return {"success": True, "type": "report", "decision": decision}
 
 

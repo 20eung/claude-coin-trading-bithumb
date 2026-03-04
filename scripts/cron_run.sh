@@ -11,8 +11,10 @@
 
 set -euo pipefail
 
-# cron 환경에서 claude, python3 등을 찾기 위한 PATH 설정
+# cron 환경 설정
+export HOME="/Users/20eung"
 export PATH="/Users/20eung/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+export AWS_PROFILE="default"
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT_DIR"
@@ -62,12 +64,17 @@ fi
 
 echo "[$(date)] 프롬프트 생성 완료 ($(echo "$PROMPT" | wc -c) bytes)" >> "$LOG_FILE"
 
-# 2. claude -p 실행
+# 2. claude -p 실행 (stdout/stderr 모두 캡처)
 echo "[$(date)] claude -p 분석 시작..." >> "$LOG_FILE"
-RESPONSE=$(echo "$PROMPT" | claude -p --dangerously-skip-permissions --allowedTools "Bash(python3:*)" 2>>"$LOG_FILE") || {
-  notify_error "claude -p 실행 실패"
+CLAUDE_ERR=$(mktemp)
+RESPONSE=$(echo "$PROMPT" | claude -p --dangerously-skip-permissions --allowedTools "Bash(python3:*)" 2>"$CLAUDE_ERR") || {
+  ERRMSG=$(cat "$CLAUDE_ERR")
+  echo "[$(date)] claude stderr: ${ERRMSG}" >> "$LOG_FILE"
+  rm -f "$CLAUDE_ERR"
+  notify_error "claude -p 실행 실패: ${ERRMSG:-(출력 없음)}"
   exit 1
 }
+rm -f "$CLAUDE_ERR"
 
 # 3. 응답 저장
 echo "$RESPONSE" > "$RESPONSE_FILE"
