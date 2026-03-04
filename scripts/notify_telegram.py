@@ -42,16 +42,19 @@ KST = timezone(timedelta(hours=9))
 
 def _get_credentials():
     bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
-    user_id = os.environ.get("TELEGRAM_USER_ID")
-    if not bot_token or not user_id:
-        raise RuntimeError("TELEGRAM_BOT_TOKEN 또는 TELEGRAM_USER_ID 미설정")
-    return bot_token, user_id
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID") or os.environ.get("TELEGRAM_USER_ID")
+    if not bot_token or not chat_id:
+        raise RuntimeError("TELEGRAM_BOT_TOKEN 또는 TELEGRAM_CHAT_ID 미설정")
+    thread_id = os.environ.get("TELEGRAM_THREAD_ID")
+    return bot_token, chat_id, thread_id
 
 
-def _send(bot_token: str, user_id: str, text: str, parse_mode: str = None):
-    payload = {"chat_id": user_id, "text": text}
+def _send(bot_token: str, chat_id: str, text: str, parse_mode: str = None, thread_id: str = None):
+    payload = {"chat_id": chat_id, "text": text}
     if parse_mode:
         payload["parse_mode"] = parse_mode
+    if thread_id:
+        payload["message_thread_id"] = int(thread_id)
 
     r = requests.post(
         f"{TELEGRAM_API.format(token=bot_token)}/sendMessage",
@@ -65,19 +68,19 @@ def _send(bot_token: str, user_id: str, text: str, parse_mode: str = None):
 
 def send_message(msg_type: str, title: str, body: str):
     """일반 메시지 전송 (HTML 포맷)"""
-    bot_token, user_id = _get_credentials()
+    bot_token, chat_id, thread_id = _get_credentials()
 
     ts = datetime.now(KST).strftime("%Y-%m-%d %H:%M KST")
     emoji = EMOJI.get(msg_type, "\U0001f4ac")
     text = f"{emoji} <b>{html.escape(title)}</b>\n\n{html.escape(body)}\n\n<i>{html.escape(ts)}</i>"
 
-    _send(bot_token, user_id, text, parse_mode="HTML")
+    _send(bot_token, chat_id, text, parse_mode="HTML", thread_id=thread_id)
     return {"success": True, "type": msg_type, "title": title}
 
 
 def send_report(data):
     """분석 리포트를 구조화된 포맷으로 전송 (HTML)"""
-    bot_token, user_id = _get_credentials()
+    bot_token, chat_id, thread_id = _get_credentials()
 
     if isinstance(data, str):
         data = json.loads(data)
@@ -136,18 +139,22 @@ def send_report(data):
                 lines.append(f"{e(key)}: {e(val)}")
 
     text = "\n".join(lines)
-    _send(bot_token, user_id, text, parse_mode="HTML")
+    _send(bot_token, chat_id, text, parse_mode="HTML", thread_id=thread_id)
     return {"success": True, "type": "report", "decision": decision}
 
 
 def send_photo(image_path: str, caption: str):
     """이미지(차트) 전송"""
-    bot_token, user_id = _get_credentials()
+    bot_token, chat_id, thread_id = _get_credentials()
+
+    data = {"chat_id": chat_id, "caption": caption}
+    if thread_id:
+        data["message_thread_id"] = int(thread_id)
 
     with open(image_path, "rb") as f:
         r = requests.post(
             f"{TELEGRAM_API.format(token=bot_token)}/sendPhoto",
-            data={"chat_id": user_id, "caption": caption},
+            data=data,
             files={"photo": ("chart.png", f, "image/png")},
             timeout=30,
         )
