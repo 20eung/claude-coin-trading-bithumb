@@ -12,3 +12,4 @@ logs/claude_responses/
 docs/.pdca-status.json
 docs/.pdca-snapshots/
 docs/.bkit-memory.json
+database/trading.db
