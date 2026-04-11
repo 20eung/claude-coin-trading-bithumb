@@ -30,6 +30,25 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 SNAPSHOT_DIR="data/snapshots/${TIMESTAMP}"
 mkdir -p "$SNAPSHOT_DIR" "logs/executions"
 
+# ── 데이터 정리 (보존 기간 초과 파일 삭제) ────────────────────
+# 설정: 보존 일수
+KEEP_SNAPSHOTS_DAYS=30    # 스냅샷
+KEEP_CHARTS_DAYS=7        # 차트
+KEEP_LOGS_DAYS=30         # 실행 로그
+
+cleanup_old_files() {
+  local dir="$1"
+  local days="$2"
+  if [ -d "$dir" ] && [ "$(ls -A "$dir" 2>/dev/null)" ]; then
+    find "$dir" -type f -mtime "+${days}" -delete 2>/dev/null || true
+  fi
+}
+
+echo "[$(date)] 오래된 데이터 정리..." >&2
+cleanup_old_files "data/snapshots" "$KEEP_SNAPSHOTS_DAYS"
+cleanup_old_files "data/charts" "$KEEP_CHARTS_DAYS"
+cleanup_old_files "logs/executions" "$KEEP_LOGS_DAYS"
+cleanup_old_files "logs/claude_responses" "$KEEP_LOGS_DAYS"
 echo "[$(date)] 데이터 수집 시작..." >&2
 
 # 1. 시장 데이터 수집
@@ -61,24 +80,28 @@ FEAR_GREED=$(cat "${SNAPSHOT_DIR}/fear_greed.json")
 NEWS=$(cat "${SNAPSHOT_DIR}/news.json")
 PORTFOLIO=$(cat "${SNAPSHOT_DIR}/portfolio.json")
 
-# Supabase에서 과거 결정 조회 (최근 10건) - PostgREST API 사용
+# SQLite에서 과거 결정 조회 (최근 10건)
 PAST_DECISIONS="[]"
-if [ -n "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
-  PAST_DECISIONS=$(curl -s \
-    "${SUPABASE_URL}/rest/v1/decisions?select=*&order=created_at.desc&limit=10" \
-    -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
-    -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
-    2>/dev/null || echo "[]")
+if [ -f "${PROJECT_DIR}/database/trading.db" ]; then
+  PAST_DECISIONS=$(python3 -c "
+import sys
+sys.path.insert(0, '${PROJECT_DIR}')
+from database.db import get_recent_decisions
+import json
+print(json.dumps(get_recent_decisions(10), ensure_ascii=False))
+" 2>/dev/null || echo "[]")
 fi
 
 # 미반영 피드백 조회
 FEEDBACK="[]"
-if [ -n "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
-  FEEDBACK=$(curl -s \
-    "${SUPABASE_URL}/rest/v1/feedback?select=*&applied=eq.false&order=created_at.desc" \
-    -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
-    -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
-    2>/dev/null || echo "[]")
+if [ -f "${PROJECT_DIR}/database/trading.db" ]; then
+  FEEDBACK=$(python3 -c "
+import sys
+sys.path.insert(0, '${PROJECT_DIR}')
+from database.db import get_pending_feedback
+import json
+print(json.dumps(get_pending_feedback(), ensure_ascii=False))
+" 2>/dev/null || echo "[]")
 fi
 
 # 프롬프트를 stdout으로 출력
@@ -146,10 +169,12 @@ $(date '+%Y-%m-%d %H:%M:%S KST')
         "decision": "매수|매도|관망",
         "decision_en": "BUY|SELL|HOLD",
         "market": {
-          "price": "현재가 98,600,000 KRW",
-          "sma20": "SMA(20) 98,411,100 (+0.19%)",
-          "rsi": "RSI 41.49",
-          "fgi": "FGI 14 (극도공포)"
+          "current_price": 98600000,
+          "sma_20": 98411100,
+          "price_vs_sma20_pct": 0.19,
+          "rsi_14": 41.49,
+          "fgi": 14,
+          "fgi_classification": "Extreme Fear"
         },
         "reasons": [
           "첫 번째 근거",
@@ -157,9 +182,9 @@ $(date '+%Y-%m-%d %H:%M:%S KST')
           "세 번째 근거"
         ],
         "portfolio": {
-          "holdings": "0.18832976 BTC",
-          "eval_amount": "19,469,154원",
-          "profit_loss": "-34.73% (-10,363,345원)"
+          "btc_holdings": 0.18832976,
+          "eval_amount": 19469154,
+          "profit_loss_pct": -34.73
         }
       }
 

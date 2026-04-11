@@ -31,6 +31,15 @@ EMOJI = {
     "status": "\U0001f4cb",    # 📋
 }
 
+# FGI 분류 한국어 매핑
+FGI_CLASS_KO = {
+    "Extreme Fear": "극도공포",
+    "Fear": "공포",
+    "Neutral": "중립",
+    "Greed": "탐욕",
+    "Extreme Greed": "극도탐욕",
+}
+
 DECISION_EMOJI = {
     "매수": "\U0001f4c8",      # 📈
     "매도": "\U0001f4c9",      # 📉
@@ -101,19 +110,40 @@ def send_report(data):
     if market:
         lines.append("")
         lines.append("<b>\u3010시장 분석\u3011</b>")
-        for key, value in market.items():
-            val = str(value)
-            if key == "price":
-                parts = val.split(" ", 1)
-                if len(parts) == 2:
-                    lines.append(f"<b>{e(parts[0])}: {e(parts[1])}</b>")
-                else:
-                    lines.append(f"<b>{e(val)}</b>")
+
+        # price
+        price = market.get("current_price") or market.get("price")
+        if price:
+            price_str = f"{int(price):,}" if isinstance(price, (int, float)) else str(price)
+            lines.append(f"- 현재가: {e(price_str)}원")
+
+        # SMA(20)
+        sma20 = market.get("sma_20") or market.get("sma20")
+        if sma20:
+            sma_str = f"{int(sma20):,}" if isinstance(sma20, (int, float)) else str(sma20)
+            pct = market.get("price_vs_sma20_pct")
+            if pct is not None:
+                lines.append(f"- SMA(20): {e(sma_str)}원 ({e(str(pct))}%)")
             else:
-                lines.append(e(val))
+                lines.append(f"- SMA(20): {e(sma_str)}원")
+
+        # RSI
+        rsi = market.get("rsi_14") or market.get("rsi")
+        if rsi:
+            lines.append(f"- RSI: {e(str(rsi))}")
+
+        # FGI
+        fgi_val = market.get("fgi") or market.get("fear_greed_value")
+        fgi_cls = market.get("fgi_classification") or market.get("fear_greed_class") or ""
+        if fgi_val:
+            fgi_ko = FGI_CLASS_KO.get(fgi_cls, fgi_cls) if fgi_cls else ""
+            if fgi_ko:
+                lines.append(f"- FGI: {e(str(fgi_val))} ({e(fgi_ko)})")
+            else:
+                lines.append(f"- FGI: {e(str(fgi_val))}")
 
     # 【결정 근거】
-    reasons = data.get("reasons", [])
+    reasons = data.get("reasons", []) or data.get("reasons_detail", [])
     if reasons:
         lines.append("")
         lines.append("<b>\u3010결정 근거\u3011</b>")
@@ -123,20 +153,28 @@ def send_report(data):
     # 【포트폴리오】
     portfolio = data.get("portfolio", {})
     if portfolio:
-        PORTFOLIO_LABELS = {
-            "holdings": "보유수량:",
-            "eval_amount": "평가금액:",
-            "profit_loss": "평가손익:",
-        }
         lines.append("")
         lines.append("<b>\u3010포트폴리오\u3011</b>")
-        for key, value in portfolio.items():
-            val = str(value)
-            label = PORTFOLIO_LABELS.get(key)
-            if label:
-                lines.append(f"{label} {e(val)}")
+
+        # 보유수량
+        btc = portfolio.get("btc_holdings") or portfolio.get("holdings")
+        if btc:
+            lines.append(f"- 보유수량: {e(str(btc))} BTC")
+
+        # 평가금액
+        eval_amt = portfolio.get("eval_amount")
+        if eval_amt:
+            eval_str = f"{float(eval_amt):,.0f}" if isinstance(eval_amt, (int, float)) else str(eval_amt)
+            lines.append(f"- 평가금액: {e(eval_str)} 원")
+
+        # 평가손익
+        pl = portfolio.get("profit_loss_pct") or portfolio.get("profit_loss")
+        if pl:
+            if isinstance(pl, (int, float)):
+                sign = "+" if pl > 0 else ""
+                lines.append(f"- 평가손익: {e(sign)}{e(str(pl))}%")
             else:
-                lines.append(f"{e(key)}: {e(val)}")
+                lines.append(f"- 평가손익: {e(str(pl))}")
 
     text = "\n".join(lines)
     _send(bot_token, chat_id, text, parse_mode="HTML", thread_id=thread_id)

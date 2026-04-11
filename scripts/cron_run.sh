@@ -11,17 +11,12 @@
 
 set -euo pipefail
 
-# cron 환경 설정
-export HOME="/Users/20eung"
-export PATH="/Users/20eung/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
-export AWS_PROFILE="default"
+# cron 환경 설정 (Linux 서버)
+export HOME="/home/ubuntu"
+export PATH="/home/ubuntu/.local/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
 
-# AWS Bedrock 인증 (~/.aws/credentials에서 읽어옴)
-export CLAUDE_CODE_USE_BEDROCK=1
-export AWS_ACCESS_KEY_ID=$(awk '/aws_access_key_id/{print $3}' ~/.aws/credentials)
-export AWS_SECRET_ACCESS_KEY=$(awk '/aws_secret_access_key/{print $3}' ~/.aws/credentials)
-export AWS_REGION=$(awk '/region/{print $3}' ~/.aws/config)
-export AWS_DEFAULT_REGION="${AWS_REGION}"
+# 중첩 세션 방지 우회 (cron 등 외부 호출 시 필요)
+unset CLAUDECODE
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT_DIR"
@@ -75,7 +70,7 @@ echo "[$(date)] 프롬프트 생성 완료 ($(echo "$PROMPT" | wc -c) bytes)" >>
 echo "[$(date)] claude -p 분석 시작..." >> "$LOG_FILE"
 echo "[$(date)] claude 경로: $(which claude 2>&1)" >> "$LOG_FILE"
 echo "[$(date)] claude 버전: $(claude --version 2>&1)" >> "$LOG_FILE"
-echo "[$(date)] AWS_PROFILE=${AWS_PROFILE:-미설정}, HOME=${HOME}" >> "$LOG_FILE"
+echo "[$(date)] HOME=${HOME}" >> "$LOG_FILE"
 
 CLAUDE_OUT=$(mktemp)
 CLAUDE_ERR=$(mktemp)
