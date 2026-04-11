@@ -80,6 +80,14 @@ FEAR_GREED=$(cat "${SNAPSHOT_DIR}/fear_greed.json")
 NEWS=$(cat "${SNAPSHOT_DIR}/news.json")
 PORTFOLIO=$(cat "${SNAPSHOT_DIR}/portfolio.json")
 
+# ── SQLite DB 초기화 (필요시 자동 생성) ────────────────────
+python3 -c "
+import sys
+sys.path.insert(0, '${PROJECT_DIR}')
+from database.db import init_db_if_not_exists
+init_db_if_not_exists()
+" 2>/dev/null || true
+
 # SQLite에서 과거 결정 조회 (최근 10건)
 PAST_DECISIONS="[]"
 if [ -f "${PROJECT_DIR}/database/trading.db" ]; then

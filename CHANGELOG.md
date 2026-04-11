@@ -9,11 +9,21 @@ Supabase PostgreSQL에서 로컬 SQLite로 데이터베이스를 변경했습니
 - `database/schema.sql` - SQLite 스키마 (6개 테이블)
 - `database/db.py` - CRUD 모듈
 - `scripts/run_analysis.sh` - Supabase API → SQLite 조회로 변경
+- **자동 초기화:** DB 파일이 없으면 자동 생성
 
 ### 텔레그램 리포트 포맷 개선
 
 - FGI 분류를 한국어로 표시 (Extreme Fear → 극도공포)
--arket, portfolio 필드를 구조화하여 가독성 향상
+- market, portfolio 필드를 구조화하여 가독성 향상
+
+### 데이터 정리 로직 추가
+
+- `run_analysis.sh`에 자동 정리 (snapshots: 30일, charts: 7일, logs: 30일)
+
+### 문서 및 기타
+
+- `.gitignore`에 `data/` 추가
+- `docs/releases/`에 버전별 릴리즈 노트 추가
 
 ## [1.1.0] - 2026-03-04
 
