@@ -2,6 +2,10 @@
 
 Claude Code가 직접 데이터를 수집하고, 분석하고, 판단하고, 매매까지 실행하는 AI 트레이딩 시스템입니다.
 
+> **원본 프로젝트:** [Dante Labs - claude-coin-trading](https://github.com/dandacompany/claude-coin-trading) (Upbit API)
+>
+> 이 프로젝트는 원본 Upbit 버전을 Bithumb 거래소로 마이그레이션한 Fork입니다.
+
 ## 핵심 기능
 
 - **자동 거래**: Bithumb 거래소 REST API 연동
