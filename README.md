@@ -1,5 +1,9 @@
 # Claude 암호화폐 자동매매 봇
 
+[![GitHub Release](https://img.shields.io/github/v/release/20eung/claude-coin-trading-bithumb)](https://github.com/20eung/claude-coin-trading-bithumb/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![ Claude Code](https://img.shields.io/badge/Claude%20Code-Enabled-brightgreen)](https://docs.anthropic.com/en/docs/claude-code)
+
 Claude Code가 직접 데이터를 수집하고, 분석하고, 판단하고, 매매까지 실행하는 AI 트레이딩 시스템입니다.
 
 > **원본 프로젝트:** [Dante Labs - claude-coin-trading](https://github.com/dandacompany/claude-coin-trading) (Upbit API)
